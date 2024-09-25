@@ -5,11 +5,16 @@ import { useEffect, useState } from 'react';
 export default function Login({ navigation }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     const connect = async () => {
         if (username != '' && password != ''){
             const response = await axios.post("http://10.60.136.210:3000/utilisateur/login", {"nom": username, "mdp": password})
             console.log(await response.data)
+            if (response.data["error"]){
+                setError(response.data["error"])
+                return;
+            }
             navigation.navigate('Salles', {token: response.data["token"]})
         }
     }
@@ -19,6 +24,7 @@ export default function Login({ navigation }) {
             <View style={styles.header}>
             <Text style={styles.title}>Connexion</Text>
             </View>
+            <Text style={styles.error}>{error}</Text>
             <SafeAreaView>
                 <TextInput
                     style={styles.input}
@@ -61,5 +67,10 @@ const styles = StyleSheet.create({
     height: 40,
     margin: 12,
     padding: 10,
+  },
+  error: {
+    color: '#f33',
+    textAlign: 'center',
+    marginTop: 10
   }
 });

@@ -13,7 +13,7 @@ export default function SalleDetail({ navigation, route }) {
       const fetchData = async () => {
         const salleResponse = await axios.get(`http://10.60.136.210:3000/salles/${route.params.salleId}`)
         setSalle(salleResponse.data[0]);
-        const reservationResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}`)
+        const reservationResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}/${today}`)
         setReservations(reservationResponse.data);
         const creneauResponse = await axios.get(`http://10.60.136.210:3000/creneaux/all`)
         setCreneaux(creneauResponse.data);
@@ -37,10 +37,12 @@ export default function SalleDetail({ navigation, route }) {
               (
               <View key={i+1000} style={styles.reservationInfos}>
                 <Text style={styles.salle}>Réservé</Text>
-                <Text style={styles.salle}>{reservations[i]["description"]}</Text>
+                {/*<Text style={styles.salle}>{reservations[i]["description"]}</Text>*/}
               </View>)
               :
-              <Text key={i+2000} style={styles.salle}>Disponible</Text>
+              <View key={i+1000} style={styles.reservationInfos}>
+                <Text key={i+2000} style={styles.salle}>Disponible</Text>
+              </View>
             }
             </View>
           )

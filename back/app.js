@@ -32,6 +32,10 @@ app.post('/utilisateur/login', (req, res) => {
           res.status(500).send('Error fetching user');
           return;
         }
+        if (results.length == 0){
+            res.json({"error": "Utilisateur ou mot de passe incorrect"})
+            return;
+        }
         const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"]}, 'golem', { expiresIn: '1h',})
         res.json({token});
     });
@@ -81,13 +85,14 @@ app.get('/creneaux/all', (req, res) => {
     });
 })
 
-app.get('/reservation/:salleId', (req, res) => {
-    db.query(`SELECT * FROM Reservation WHERE idSalle = ? AND dateReservation >= DATE(NOW())`, [req.params.salleId], (err, results) => {
+app.get('/reservation/:salleId/:day', (req, res) => {
+    db.query(`SELECT * FROM Reservation WHERE idSalle = ? AND dateReservation = ?`, [req.params.salleId, req.params.day], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching users');
           return;
         }
+        console.log(req.params.day)
         res.json(results);
     });
 })
