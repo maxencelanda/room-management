@@ -8,7 +8,7 @@ const app = express()
 const port = 3000
 
 app.use(express.json())
-app.use(cors({origins: `http://10.60.136.210:8080`}));
+app.use(cors({origins: `http://${process.env.IP}:8080`}));
 
 app.post('/utilisateur/create', (req, res) => {
     const data = req.body
@@ -36,7 +36,7 @@ app.post('/utilisateur/login', (req, res) => {
             res.json({"error": "Utilisateur ou mot de passe incorrect"})
             return;
         }
-        const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"]}, 'golem', { expiresIn: '1h',})
+        const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"], idRole: results[0]["idRole"]}, 'golem', { expiresIn: '1h',})
         res.json({token});
     });
 })
@@ -74,7 +74,7 @@ app.get('/salles/:salleId', verifyToken, (req, res) => {
     });
 })
 
-app.get('/creneaux/all', (req, res) => {
+app.get('/creneaux/all', verifyToken, (req, res) => {
     db.query(`SELECT * FROM Creneau`, (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
@@ -85,8 +85,8 @@ app.get('/creneaux/all', (req, res) => {
     });
 })
 
-app.get('/reservation/:salleId/:day', (req, res) => {
-    db.query(`SELECT C.horaire, R.idReservation, R.description, R.dateReservation, U.nom, U.idRole FROM Creneau AS C LEFT JOIN Reservation AS R ON C.idCreneau = R.idCreneau LEFT JOIN Utilisateur AS U ON R.idUtilisateur = U.idUtilisateur AND R.idSalle = ? AND R.dateReservation = ?;`, [req.params.salleId, req.params.day], (err, results) => {
+app.get('/reservation/:salleId/:day', verifyToken, (req, res) => {
+    db.query(`SELECT C.horaire, R.idReservation, R.description, R.dateReservation, U.nom, U.idRole FROM Creneau AS C LEFT JOIN Reservation AS R ON C.idCreneau = R.idCreneau AND R.idSalle = ? AND R.dateReservation = ? LEFT JOIN Utilisateur AS U ON R.idUtilisateur = U.idUtilisateur;`, [req.params.salleId, req.params.day], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching users');
@@ -96,9 +96,38 @@ app.get('/reservation/:salleId/:day', (req, res) => {
     });
 })
 
-app.post('/reservation/create', (req, res) => {
+app.post('/reservation/create', verifyToken, (req, res) => {
     const data = req.body
-    db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?, ?)`, [data.nom, data.description, data.dateReservation, data.idSalle, data.idCreneau, data.idUtilisateur], (err, results) => {
+    const idUtilisateur = req.idUtilisateur
+    const idRole = req.idRole
+    if (idRole == 1){
+        res.json({"error": "Role non autorisé"})
+        return;
+    }
+    db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?)`, [data.description, data.dateReservation, idUtilisateur, data.idSalle, data.idCreneau], (err, results) => {
+        if (err) {
+          console.error('Error executing query: ' + err.stack);
+          res.status(500).send('Error fetching users');
+          return;
+        }
+        res.json({"message": "success"});
+    });
+})
+
+app.delete('/reservation/delete', verifyToken, (req, res) => {
+    const data = req.body
+    const idUtilisateur = req.idUtilisateur
+    const idRole = req.idRole;
+    let delQuery = `DELETE FROM Reservation WHERE idReservation = ?`
+    let values = [data.idReservation]
+    if (idRole == 1){
+        res.json({"error": "Role non autorisé"})
+        return;
+    } else if (idRole == 2){
+        delQuery = `DELETE FROM Reservation WHERE idReservation = ? AND idUtilisateur = ?`
+        values.push(idUtilisateur)
+    }
+    db.query(delQuery, values, (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching users');

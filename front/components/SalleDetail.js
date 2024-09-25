@@ -10,9 +10,10 @@ export default function SalleDetail({ navigation, route }) {
 
     useEffect(() => {
       const fetchData = async () => {
-        const salleResponse = await axios.get(`http://10.60.136.210:3000/salles/${route.params.salleId}`)
+        const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
+        const salleResponse = await axios.get(`http://10.60.136.210:3000/salles/${route.params.salleId}`, headers)
         setSalle(salleResponse.data[0]);
-        const creneauxResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}/${today}`)
+        const creneauxResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}/${today}`, headers)
         setCreneaux(creneauxResponse.data);
       }
       fetchData()

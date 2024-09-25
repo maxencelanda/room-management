@@ -9,9 +9,10 @@ export default function Salles({ navigation, route }) {
     useEffect(() => {
       console.log(route.params.token)
       const fetchData = async () => {
-        const etagesResponse = await axios.get(`http://10.60.136.210:3000/etages/all`, {headers: {Authorization: `Bearer ${route.params.token}`}})
+        const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
+        const etagesResponse = await axios.get(`http://10.60.136.210:3000/etages/all`, headers)
         setEtages(etagesResponse.data)
-        const sallesResponse = await axios.get(`http://10.60.136.210:3000/salles/all`, {headers: {Authorization: `Bearer ${route.params.token}`}})
+        const sallesResponse = await axios.get(`http://10.60.136.210:3000/salles/all`, headers)
         setSalles(sallesResponse.data);
       }
       fetchData()
