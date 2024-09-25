@@ -36,7 +36,7 @@ app.post('/utilisateur/login', (req, res) => {
             res.json({"error": "Utilisateur ou mot de passe incorrect"})
             return;
         }
-        const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"], idRole: results[0]["idRole"]}, 'golem', { expiresIn: '1h',})
+        const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"], idRole: results[0]["idRole"]}, process.env.TOKEN_SECRET, { expiresIn: '1h',})
         res.json({token});
     });
 })
