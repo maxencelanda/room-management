@@ -10,7 +10,6 @@ export default function Login({ navigation }) {
     const connect = async () => {
         if (username != '' && password != ''){
             const response = await axios.post("http://10.60.136.210:3000/utilisateur/login", {"nom": username, "mdp": password})
-            console.log(await response.data)
             if (response.data["error"]){
                 setError(response.data["error"])
                 return;

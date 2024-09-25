@@ -63,7 +63,7 @@ app.get('/salles/all', verifyToken, (req, res) => {
     });
 })
 
-app.get('/salles/:salleId', (req, res) => {
+app.get('/salles/:salleId', verifyToken, (req, res) => {
     db.query(`SELECT * FROM Salle WHERE idSalle = ?`, [req.params.salleId], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
@@ -86,20 +86,19 @@ app.get('/creneaux/all', (req, res) => {
 })
 
 app.get('/reservation/:salleId/:day', (req, res) => {
-    db.query(`SELECT * FROM Reservation WHERE idSalle = ? AND dateReservation = ?`, [req.params.salleId, req.params.day], (err, results) => {
+    db.query(`SELECT C.horaire, R.idReservation, R.description, R.dateReservation, U.nom, U.idRole FROM Creneau AS C LEFT JOIN Reservation AS R ON C.idCreneau = R.idCreneau LEFT JOIN Utilisateur AS U ON R.idUtilisateur = U.idUtilisateur AND R.idSalle = ? AND R.dateReservation = ?;`, [req.params.salleId, req.params.day], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching users');
           return;
         }
-        console.log(req.params.day)
         res.json(results);
     });
 })
 
 app.post('/reservation/create', (req, res) => {
     const data = req.body
-    db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?)`, [data.nom, data.description, data.dateReservation, data.idSalle, data.idCreneau], (err, results) => {
+    db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?, ?)`, [data.nom, data.description, data.dateReservation, data.idSalle, data.idCreneau, data.idUtilisateur], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching users');

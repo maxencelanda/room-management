@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 export default function SalleDetail({ navigation, route }) {
     const [salle, setSalle] = useState([]);
-    const [reservations, setReservations] = useState([])
     const [creneaux, setCreneaux] = useState([])
     const today = new Date().toJSON().slice(0, 10);
     const todayFormat = new Date().toDateString()
@@ -13,10 +12,8 @@ export default function SalleDetail({ navigation, route }) {
       const fetchData = async () => {
         const salleResponse = await axios.get(`http://10.60.136.210:3000/salles/${route.params.salleId}`)
         setSalle(salleResponse.data[0]);
-        const reservationResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}/${today}`)
-        setReservations(reservationResponse.data);
-        const creneauResponse = await axios.get(`http://10.60.136.210:3000/creneaux/all`)
-        setCreneaux(creneauResponse.data);
+        const creneauxResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}/${today}`)
+        setCreneaux(creneauxResponse.data);
       }
       fetchData()
   }, [])
@@ -30,23 +27,17 @@ export default function SalleDetail({ navigation, route }) {
         <Text style={styles.title}>{todayFormat}</Text>
         {
           creneaux.map((creneau, i) => (
-            <View style={styles.reservationContainer}>
-            <Text key={i} style={styles.salle}>{creneau["horaire"]}</Text>
-            {
-              reservations.filter(reservation => today == reservation["dateReservation"] && creneau["idCreneau"] == reservation["idCreneau"]).length > 0 ?
-              (
-              <View key={i+1000} style={styles.reservationInfos}>
-                <Text style={styles.salle}>Réservé</Text>
-                {/*<Text style={styles.salle}>{reservations[i]["description"]}</Text>*/}
-              </View>)
-              :
-              <View key={i+1000} style={styles.reservationInfos}>
-                <Text key={i+2000} style={styles.salle}>Disponible</Text>
-              </View>
-            }
+            <View key={i} style={styles.reservationContainer}>
+              <Text style={styles.salle}>{creneau["horaire"]}</Text>
+              {
+                creneau["idReservation"] != null ?
+                <Text style={styles.salle}>Réservé - {creneau["nom"]} - {creneau["description"]}</Text>
+                :
+                <Text style={styles.salle}>Disponible</Text>
+              }
             </View>
-          )
-        )}
+          ))
+        }
       </ScrollView>
     </View>
   )
