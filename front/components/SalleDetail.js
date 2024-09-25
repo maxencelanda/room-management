@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -11,11 +11,11 @@ export default function SalleDetail({ navigation, route }) {
 
     useEffect(() => {
       const fetchData = async () => {
-        const salleResponse = await axios.get(`http://10.60.137.63:3000/salles/${route.params.salleId}`)
+        const salleResponse = await axios.get(`http://10.60.136.210:3000/salles/${route.params.salleId}`)
         setSalle(salleResponse.data[0]);
-        const reservationResponse = await axios.get(`http://10.60.137.63:3000/reservation/${route.params.salleId}`)
+        const reservationResponse = await axios.get(`http://10.60.136.210:3000/reservation/${route.params.salleId}`)
         setReservations(reservationResponse.data);
-        const creneauResponse = await axios.get(`http://10.60.137.63:3000/creneaux/all`)
+        const creneauResponse = await axios.get(`http://10.60.136.210:3000/creneaux/all`)
         setCreneaux(creneauResponse.data);
       }
       fetchData()
@@ -23,30 +23,29 @@ export default function SalleDetail({ navigation, route }) {
 
   return (
     <View style={styles.body}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{salle["nom"]}</Text>
-        </View>
-          {
-            creneaux.map((creneau, i) => (
-              <View>
-              <Text key={i} style={styles.salle}>{creneau["horaire"]}</Text>
-              {
-                reservations.filter(reservation => today == reservation["dateReservation"] && creneau["idCreneau"] == reservation["idCreneau"]).length > 0 ?
-                reservations.map((reservation, x) => 
-                  <Text key={x} style={styles.salle}>Réservé</Text>
-                )
-                :
-                <Text key={i} style={styles.salle}>Disponible</Text>
-              }
-              </View>
-            )
-          )}
-          {/*reservations.map((reservation, i) => 
-            today == reservation["dateReservation"] ? 
-            <Text key={i} style={styles.salle}>Ajd</Text>
-            : <Text key={i} style={styles.salle}>Pas ajd ({reservation["dateReservation"]} vs {today})</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>{salle["nom"]}</Text>
+      </View>
+      <ScrollView>
+        <Text style={styles.title}>{todayFormat}</Text>
+        {
+          creneaux.map((creneau, i) => (
+            <View style={styles.reservationContainer}>
+            <Text key={i} style={styles.salle}>{creneau["horaire"]}</Text>
+            {
+              reservations.filter(reservation => today == reservation["dateReservation"] && creneau["idCreneau"] == reservation["idCreneau"]).length > 0 ?
+              (
+              <View key={i+1000} style={styles.reservationInfos}>
+                <Text style={styles.salle}>Réservé</Text>
+                <Text style={styles.salle}>{reservations[i]["description"]}</Text>
+              </View>)
+              :
+              <Text key={i+2000} style={styles.salle}>Disponible</Text>
+            }
+            </View>
           )
-          */}
+        )}
+      </ScrollView>
     </View>
   )
 }
@@ -67,5 +66,15 @@ const styles = StyleSheet.create({
   salle: {
     marginTop: '10%',
     color: '#fff',
+  },
+  reservationInfos: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-evenly"
+  },
+  reservationContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-evenly"
   }
 });

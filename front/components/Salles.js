@@ -2,15 +2,16 @@ import { StyleSheet, Text, View, Button } from 'react-native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-export default function Salles({ navigation }) {
+export default function Salles({ navigation, route }) {
     const [etages, setEtages] = useState([]);
     const [salles, setSalles] = useState([]);
 
     useEffect(() => {
+      console.log(route.params.token)
       const fetchData = async () => {
-        const etagesResponse = await axios.get(`http://10.60.137.63:3000/etages/all`)
+        const etagesResponse = await axios.get(`http://10.60.136.210:3000/etages/all`, {headers: {Authorization: `Bearer ${route.params.token}`}})
         setEtages(etagesResponse.data)
-        const sallesResponse = await axios.get(`http://10.60.137.63:3000/salles/all`)
+        const sallesResponse = await axios.get(`http://10.60.136.210:3000/salles/all`, {headers: {Authorization: `Bearer ${route.params.token}`}})
         setSalles(sallesResponse.data);
       }
       fetchData()
@@ -30,7 +31,7 @@ export default function Salles({ navigation }) {
                 style={styles.salle}
                 title={salle["nom"]}
                 onPress={() =>
-                  navigation.navigate('SalleDetail', {salleId: salle["idSalle"]})
+                  navigation.navigate('SalleDetail', {token: route.params.token, salleId: salle["idSalle"]})
                 }
               />
             ))}
