@@ -3,6 +3,7 @@ const db = require("./db")
 const verifyToken = require("./jwtauth")
 const { createHash } = require('crypto')
 const jwt = require('jsonwebtoken');
+require('dotenv').config()
 var cors = require('cors');
 const app = express()
 const port = 3000

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Button, SafeAreaView, TextInput } from 'react-native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { IP } from '@env'
 
 export default function Login({ navigation }) {
     const [username, setUsername] = useState("");
@@ -9,7 +10,7 @@ export default function Login({ navigation }) {
 
     const connect = async () => {
         if (username != '' && password != ''){
-            const response = await axios.post("http://10.60.136.210:3000/utilisateur/login", {"nom": username, "mdp": password})
+            const response = await axios.post(`http://${IP}:3000/utilisateur/login`, {"nom": username, "mdp": password})
             if (response.data["error"]){
                 setError(response.data["error"])
                 return;

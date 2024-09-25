@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Button } from 'react-native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { IP } from '@env'
 
 export default function Salles({ navigation, route }) {
     const [etages, setEtages] = useState([]);
@@ -10,9 +11,9 @@ export default function Salles({ navigation, route }) {
       console.log(route.params.token)
       const fetchData = async () => {
         const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
-        const etagesResponse = await axios.get(`http://10.60.136.210:3000/etages/all`, headers)
+        const etagesResponse = await axios.get(`http://${IP}:3000/etages/all`, headers)
         setEtages(etagesResponse.data)
-        const sallesResponse = await axios.get(`http://10.60.136.210:3000/salles/all`, headers)
+        const sallesResponse = await axios.get(`http://${IP}:3000/salles/all`, headers)
         setSalles(sallesResponse.data);
       }
       fetchData()
