@@ -12,7 +12,7 @@ app.use(cors({origins: `http://${process.env.IP}:8080`}));
 
 app.post('/utilisateur/create', (req, res) => {
     const data = req.body
-    const mdp = createHash("sha256").update(data.mdp).digest("hex")
+    const mdp = createHash("sha256").update(process.env.SALT + data.mdp).digest("hex")
     db.query(`INSERT INTO Utilisateur VALUES(NULL, ?, ?, ?)`, [data.nom, mdp, data.idRole], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
@@ -25,7 +25,7 @@ app.post('/utilisateur/create', (req, res) => {
 
 app.post('/utilisateur/login', (req, res) => {
     const data = req.body
-    const mdp = createHash("sha256").update(data.mdp).digest("hex")
+    const mdp = createHash("sha256").update(process.env.SALT + data.mdp).digest("hex")
     db.query(`SELECT idUtilisateur FROM Utilisateur WHERE nom = ? AND mdp = ?`, [data.nom, mdp], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
