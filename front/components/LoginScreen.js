@@ -11,7 +11,7 @@ export default function Login({ navigation }) {
     const connect = async () => {
         if (username != '' && password != ''){
             const response = await axios.post(`http://${IP}:3000/utilisateur/login`, {"nom": username, "mdp": password})
-            if (response.data["error"]){
+            if (await response.data["error"]){
                 setError(response.data["error"])
                 return;
             }

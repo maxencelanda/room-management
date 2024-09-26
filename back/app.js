@@ -27,7 +27,7 @@ app.post('/utilisateur/create', (req, res) => {
 app.post('/utilisateur/login', (req, res) => {
     const data = req.body
     const mdp = createHash("sha256").update(process.env.SALT + data.mdp).digest("hex")
-    db.query(`SELECT idUtilisateur FROM Utilisateur WHERE nom = ? AND mdp = ?`, [data.nom, mdp], (err, results) => {
+    db.query(`SELECT idUtilisateur, idRole FROM Utilisateur WHERE nom = ? AND mdp = ?`, [data.nom, mdp], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching user');
@@ -37,8 +37,9 @@ app.post('/utilisateur/login', (req, res) => {
             res.json({"error": "Utilisateur ou mot de passe incorrect"})
             return;
         }
+        console.log(results)
         const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"], idRole: results[0]["idRole"]}, process.env.TOKEN_SECRET, { expiresIn: '1h',})
-        res.json({token});
+        res.json({"token": token});
     });
 })
 
@@ -54,6 +55,7 @@ app.get('/etages/all', verifyToken, (req, res) => {
 })
 
 app.get('/salles/all', verifyToken, (req, res) => {    
+    console.log(req)
     db.query('SELECT * FROM Salle', (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);

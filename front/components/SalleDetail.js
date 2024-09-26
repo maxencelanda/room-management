@@ -13,9 +13,9 @@ export default function SalleDetail({ navigation, route }) {
       const fetchData = async () => {
         const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
         const salleResponse = await axios.get(`http://${IP}:3000/salles/${route.params.salleId}`, headers)
-        setSalle(salleResponse.data[0]);
+        setSalle(await salleResponse.data[0]);
         const creneauxResponse = await axios.get(`http://${IP}:3000/reservation/${route.params.salleId}/${today}`, headers)
-        setCreneaux(creneauxResponse.data);
+        setCreneaux(await creneauxResponse.data);
       }
       fetchData()
   }, [])
