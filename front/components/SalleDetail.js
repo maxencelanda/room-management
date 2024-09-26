@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Button } from 'react-native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { IP } from '@env'
@@ -6,6 +6,7 @@ import { IP } from '@env'
 export default function SalleDetail({ navigation, route }) {
     const [salle, setSalle] = useState([]);
     const [creneaux, setCreneaux] = useState([])
+    const [idRole, setIdRole] = useState(0)
     const today = new Date().toJSON().slice(0, 10);
     const todayFormat = new Date().toDateString()
 
@@ -13,9 +14,11 @@ export default function SalleDetail({ navigation, route }) {
       const fetchData = async () => {
         const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
         const salleResponse = await axios.get(`http://${IP}:3000/salles/${route.params.salleId}`, headers)
-        setSalle(salleResponse.data[0]);
+        setSalle(await salleResponse.data[0]);
         const creneauxResponse = await axios.get(`http://${IP}:3000/reservation/${route.params.salleId}/${today}`, headers)
-        setCreneaux(creneauxResponse.data);
+        setCreneaux(await creneauxResponse.data);
+        const idRoleResponse = await axios.get(`http://${IP}:3000/idRole/get`, headers)
+        setIdRole(await idRoleResponse.data["idRole"]);
       }
       fetchData()
   }, [])
@@ -41,6 +44,17 @@ export default function SalleDetail({ navigation, route }) {
           ))
         }
       </ScrollView>
+      {
+        idRole > 1 ?
+        <Button
+          style={styles.salle}
+          title="Réserver"
+          onPress={() =>
+            navigation.navigate('Reservation', {token: route.params.token, salleId: salle["idSalle"]})
+          }
+        />
+        : null
+      }
     </View>
   )
 }

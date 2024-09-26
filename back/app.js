@@ -27,7 +27,7 @@ app.post('/utilisateur/create', (req, res) => {
 app.post('/utilisateur/login', (req, res) => {
     const data = req.body
     const mdp = createHash("sha256").update(process.env.SALT + data.mdp).digest("hex")
-    db.query(`SELECT idUtilisateur FROM Utilisateur WHERE nom = ? AND mdp = ?`, [data.nom, mdp], (err, results) => {
+    db.query(`SELECT idUtilisateur, idRole FROM Utilisateur WHERE nom = ? AND mdp = ?`, [data.nom, mdp], (err, results) => {
         if (err) {
           console.error('Error executing query: ' + err.stack);
           res.status(500).send('Error fetching user');
@@ -38,7 +38,7 @@ app.post('/utilisateur/login', (req, res) => {
             return;
         }
         const token = jwt.sign({idUtilisateur: results[0]["idUtilisateur"], idRole: results[0]["idRole"]}, process.env.TOKEN_SECRET, { expiresIn: '1h',})
-        res.json({token});
+        res.json({"token": token});
     });
 })
 
@@ -86,6 +86,11 @@ app.get('/creneaux/all', verifyToken, (req, res) => {
     });
 })
 
+app.get('/idRole/get', verifyToken, (req, res) => {
+    const idRole = req.idRole
+    res.json({"idRole": idRole});
+})
+
 app.get('/reservation/:salleId/:day', verifyToken, (req, res) => {
     db.query(`SELECT C.horaire, R.idReservation, R.description, R.dateReservation, U.nom, U.idRole FROM Creneau AS C LEFT JOIN Reservation AS R ON C.idCreneau = R.idCreneau AND R.idSalle = ? AND R.dateReservation = ? LEFT JOIN Utilisateur AS U ON R.idUtilisateur = U.idUtilisateur;`, [req.params.salleId, req.params.day], (err, results) => {
         if (err) {
@@ -105,14 +110,29 @@ app.post('/reservation/create', verifyToken, (req, res) => {
         res.json({"error": "Role non autorisé"})
         return;
     }
-    db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?)`, [data.description, data.dateReservation, idUtilisateur, data.idSalle, data.idCreneau], (err, results) => {
+
+    db.query(`SELECT * FROM Reservation WHERE dateReservation = ? AND idCreneau = ? AND idSalle = ?`, [data.dateReservation, data.idCreneau, data.idSalle], (err, results) => {
         if (err) {
-          console.error('Error executing query: ' + err.stack);
-          res.status(500).send('Error fetching users');
-          return;
+            console.error('Error executing query: ' + err.stack);
+            res.status(500).send('Error checking reservation');
+            return;
         }
-        res.json({"message": "success"});
+        if (results.length > 0){
+            res.json({"error": "Salle déjà occupée à ce créneau"})
+            return;
+        }
+
+        db.query(`INSERT INTO Reservation VALUES(NULL, ?, ?, ?, ?, ?)`, [data.description, data.dateReservation, idUtilisateur, data.idSalle, data.idCreneau], (err, results) => {
+            if (err) {
+                console.error('Error executing query: ' + err.stack);
+                res.status(500).send('Error creating reservation');
+                return;
+            }
+
+            res.json({"message": "success"});
+        });
     });
+        
 })
 
 app.delete('/reservation/delete', verifyToken, (req, res) => {
