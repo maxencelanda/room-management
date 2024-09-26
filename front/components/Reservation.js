@@ -16,9 +16,6 @@ export default function Reservation({ navigation, route }) {
     const dateValid = (dateStr) => {
         const yesterday = new Date()
         yesterday.setDate(yesterday.getDate());
-        console.log("-")
-        console.log(yesterday.getDate())
-        console.log(new Date(dateStr).getDate())
         if (!isNaN(new Date(dateStr)) && new Date(dateStr).getDate() >= yesterday.getDate()){
             setDate(new Date(dateStr).toJSON().slice(0, 10))
         } else {
