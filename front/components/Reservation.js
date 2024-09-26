@@ -12,6 +12,7 @@ export default function Reservation({ navigation, route }) {
     const today = new Date().toJSON().slice(0, 10);
     const [dateInput, setDateInput] = useState(today)
     const [horaire, setHoraire] = useState(creneaux[0])
+    const [msg, setMsg] = useState('')
 
     const dateValid = (dateStr) => {
         const yesterday = new Date()
@@ -42,14 +43,19 @@ export default function Reservation({ navigation, route }) {
                         const body = {description: motif, dateReservation: date, idSalle: salleId, idCreneau: idCreneau}
                         const response = await axios.post(`http://${IP}:3000/reservation/create`, body, headers)
                         console.log(response.data)
+                        if (response.data["message"]){
+                          setMsg(response.data["message"])
+                          setError('')
+                        } else if (response.data["error"]){
+                          setError(response.data["error"])
+                        }
                     } catch (error) {
                         console.error("Error before logging body:", error);
                     }
                 }
             }
         } else {
-            console.log(dateInput)
-            setError("Date non valide")
+          setError("Date non valide")
         }
     }
 
@@ -71,6 +77,8 @@ export default function Reservation({ navigation, route }) {
           <Text style={styles.title}>Réservation {salle["nom"]}</Text>
         </View>
       <Text style={styles.error}>{error}</Text>
+      <Text style={styles.title}>{msg}</Text>
+      
         <SafeAreaView>
         <TextInput
             style={styles.input}
@@ -122,5 +130,10 @@ const styles = StyleSheet.create({
   salle: {
     marginTop: '10%',
     color: '#fff',
+  },
+  error: {
+    color: '#f33',
+    textAlign: 'center',
+    marginTop: 10
   }
 });
