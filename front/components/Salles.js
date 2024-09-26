@@ -12,9 +12,9 @@ export default function Salles({ navigation, route }) {
       const fetchData = async () => {
         const headers = {headers: {Authorization: `Bearer ${route.params.token}`}}
         const etagesResponse = await axios.get(`http://${IP}:3000/etages/all`, headers)
-        setEtages(etagesResponse.data)
+        setEtages(await etagesResponse.data)
         const sallesResponse = await axios.get(`http://${IP}:3000/salles/all`, headers)
-        setSalles(sallesResponse.data);
+        setSalles(await sallesResponse.data);
       }
       fetchData()
   }, [])
